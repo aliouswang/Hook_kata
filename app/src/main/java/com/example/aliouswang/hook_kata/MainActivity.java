@@ -1,6 +1,8 @@
 package com.example.aliouswang.hook_kata;
 
 import android.content.Context;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.aliouswang.plugin_kata.IDynamic;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +29,10 @@ public class MainActivity extends AppCompatActivity {
     private DexClassLoader mClassLoader;
 
     private TextView tv;
+
+    private AssetManager mAssetManager;
+    private Resources mResources;
+    private Resources.Theme mTheme;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -75,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.e("DEMO", "msg:" + e.getMessage());
 //                }
 
+                loadResoucres();
 
                 try {
                     tryLoadClass();
@@ -95,17 +104,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void tryLoadClass() throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Class beanClass = mClassLoader.loadClass("jianqiang.com.plugin1.Bean");
+        Class beanClass = mClassLoader.loadClass("com.aliouswang.plugin_kata.PluginDynamic");
         if (beanClass != null) {
             Object bean = beanClass.newInstance();
 
-            Method getNameMethod = beanClass.getMethod("getName");
+            Method getNameMethod = beanClass.getMethod("getString", Context.class);
             if (getNameMethod != null) {
                 getNameMethod.setAccessible(true);
-                String name = (String) getNameMethod.invoke(bean);
+//                String name = (String) getNameMethod.invoke(bean);
+
+                IDynamic dynamic = (IDynamic) bean;
+                String name = dynamic.getString(MainActivity.this);
 
                 Log.e("hook_kata", "bean name : " + name);
             }
         }
+    }
+
+    private void loadResoucres() {
+        try {
+            AssetManager assetManager = AssetManager.class.newInstance();
+            Method addAssertPath = AssetManager.class.getMethod("addAssetPath", String.class);
+            addAssertPath.invoke(assetManager, dexPath);
+            mAssetManager = assetManager;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        mResources = new Resources(mAssetManager, super.getResources().getDisplayMetrics(),
+                super.getResources().getConfiguration());
+        mTheme = mResources.newTheme();
+        mTheme.setTo(super.getTheme());
+    }
+
+    @Override
+    public AssetManager getAssets() {
+        if (mAssetManager != null) return mAssetManager;
+        return super.getAssets();
+    }
+
+    @Override
+    public Resources getResources() {
+        if (mResources != null) return mResources;
+        return mResources;
+    }
+
+    @Override
+    public Resources.Theme getTheme() {
+        if (mTheme != null) return mTheme;
+        return mTheme;
     }
 }
