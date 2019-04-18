@@ -104,17 +104,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void tryLoadClass() throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Class beanClass = mClassLoader.loadClass("com.aliouswang.plugin_kata.PluginDynamic");
+        Class beanClass = mClassLoader.loadClass("com.example.aliouswang.plugin_kaka.PluginDynamic");
         if (beanClass != null) {
             Object bean = beanClass.newInstance();
 
             Method getNameMethod = beanClass.getMethod("getString", Context.class);
             if (getNameMethod != null) {
                 getNameMethod.setAccessible(true);
-//                String name = (String) getNameMethod.invoke(bean);
 
-                IDynamic dynamic = (IDynamic) bean;
-                String name = dynamic.getString(MainActivity.this);
+//                IDynamic dynamic = (IDynamic) bean;
+//                String name = dynamic.getString(MainActivity.this);
+
+                String name = (String) getNameMethod.invoke(bean, MainActivity.this);
 
                 Log.e("hook_kata", "bean name : " + name);
             }
@@ -146,12 +147,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public Resources getResources() {
         if (mResources != null) return mResources;
-        return mResources;
+        return super.getResources();
     }
 
     @Override
     public Resources.Theme getTheme() {
         if (mTheme != null) return mTheme;
-        return mTheme;
+        return super.getTheme();
     }
 }
