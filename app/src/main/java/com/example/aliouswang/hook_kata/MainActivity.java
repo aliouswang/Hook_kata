@@ -3,11 +3,13 @@ package com.example.aliouswang.hook_kata;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private DexClassLoader mClassLoader;
 
     private TextView tv;
+    private ImageView image;
 
     private AssetManager mAssetManager;
     private Resources mResources;
@@ -44,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        image = findViewById(R.id.image);
 
         File file = this.getFileStreamPath(apk_name);
         dexPath = file.getPath();
@@ -109,8 +114,10 @@ public class MainActivity extends AppCompatActivity {
             Object bean = beanClass.newInstance();
 
             Method getNameMethod = beanClass.getMethod("getString", Context.class);
+            Method getImageMethod = beanClass.getMethod("getDrawable", Context.class);
             if (getNameMethod != null) {
                 getNameMethod.setAccessible(true);
+                getImageMethod.setAccessible(true);
 
 //                IDynamic dynamic = (IDynamic) bean;
 //                String name = dynamic.getString(MainActivity.this);
@@ -118,6 +125,10 @@ public class MainActivity extends AppCompatActivity {
                 String name = (String) getNameMethod.invoke(bean, MainActivity.this);
 
                 Log.e("hook_kata", "bean name : " + name);
+
+                Drawable drawable = (Drawable) getImageMethod.invoke(bean, MainActivity.this);
+
+                image.setImageDrawable(drawable);
             }
         }
     }
